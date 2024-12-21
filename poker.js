@@ -27,6 +27,8 @@ export const HANDS = [
   "Four of a Kind",
   "Straight Flush",
 ];
+const INITIAL_BANKROLL = 1000;
+let bankroll = INITIAL_BANKROLL;
 
 // Dealer functions
 export function dealHand(count = 5) {
@@ -160,6 +162,15 @@ document.addEventListener("DOMContentLoaded", () => {
         rankDisplay.classList.remove("visible");
         handTypeDisplay.textContent = "";
     }
+
+    // Highlight the appropriate column in the ranking table
+    const paytableCells = document.querySelectorAll('.paytable td, .paytable th');
+    paytableCells.forEach(cell => cell.classList.remove('highlight'));
+    if (coins > 0) {
+        const columnIndex = coins + 2; // Adjust for 1-based index and extra columns
+        const cellsToHighlight = document.querySelectorAll(`.paytable td:nth-child(${columnIndex}), .paytable th:nth-child(${columnIndex})`);
+        cellsToHighlight.forEach(cell => cell.classList.add('highlight'));
+    }
   }
 
   increaseCoin.addEventListener('click', () => {
@@ -187,6 +198,9 @@ document.addEventListener("DOMContentLoaded", () => {
     currentHand = [];
     gamePhase = "start";
     console.log('Game phase set to:', gamePhase);
+
+    // Log current bankroll
+    console.log('Current Bankroll:', bankroll);
 
     // Reset UI elements
     mainDealButton.textContent = "DEAL";
@@ -240,6 +254,11 @@ document.addEventListener("DOMContentLoaded", () => {
     increaseCoin.disabled = true;
     coinDealButton.classList.remove('visible');
     
+    // Deduct coins from bankroll
+    bankroll -= coins;
+    console.log('Wager:', coins);
+    console.log('Bankroll after wager:', bankroll);
+
     // Initial deal
     holdButtons.forEach((button) => {
         button.style.display = "block";
@@ -325,60 +344,55 @@ document.addEventListener("DOMContentLoaded", () => {
 
     console.log('Final hand after draw:', currentHand);
 
-    // Highlight each card sequentially, then flash all cards, then show result
-    const highlightSequence = async () => {
-        // First highlight each card sequentially
-        for (let i = 0; i < cards.length; i++) {
-            await new Promise(resolve => {
-                setTimeout(() => {
-                    cards[i].classList.add('highlight');
-                    resolve();
-                }, 300);
-            });
-        }
+    // Show game over message immediately
+    document.querySelector(".rank-display").classList.add("visible");
 
-        // Wait a moment after all cards are highlighted
-        await new Promise(resolve => setTimeout(resolve, 500));
+    // Show final results
+    try {
+        const handRank = evaluatePokerHand(currentHand);
+        handTypeDisplay.innerHTML = HANDS[handRank] || "Invalid Hand";
+        console.log("Final Hand:", currentHand);
+        console.log("Hand Type:", HANDS[handRank]);
+        console.log("Score:", handRank);
 
-        // Flash all cards twice
-        cards.forEach(card => card.classList.add('flash'));
+        // Calculate and display winnings
+        const payoutTable = [
+            [0, 0, 0, 0, 0], // Invalid Hand
+            [0, 0, 0, 0, 0], // High Card
+            [1, 2, 3, 4, 5], // One Pair
+            [2, 4, 6, 8, 10], // Two Pair
+            [3, 6, 9, 12, 15], // Three of a Kind
+            [4, 8, 12, 16, 20], // Straight
+            [6, 12, 18, 24, 30], // Flush
+            [9, 18, 27, 36, 45], // Full House
+            [25, 50, 75, 100, 125], // Four of a Kind
+            [50, 100, 150, 200, 250], // Straight Flush
+            [800, 1600, 2400, 3200, 4000] // Royal Flush
+        ];
+        const winnings = payoutTable[handRank][coins - 1] || 0;
+        document.querySelector(".winnings-amount").textContent = winnings;
+        console.log("Winnings:", winnings);
 
-        // Wait for flash animation to complete
-        await new Promise(resolve => setTimeout(resolve, 600)); // 0.3s × 2 flashes
+        // Add winnings to bankroll
+        bankroll += winnings;
+        console.log('Bankroll after winnings:', bankroll);
+    } catch (error) {
+        console.error("Hand evaluation error:", error);
+        handTypeDisplay.innerHTML = "Invalid Hand";
+        document.querySelector(".winnings-amount").textContent = "0";
+    }
 
-        // Remove highlight and flash classes
-        cards.forEach(card => {
-            card.classList.remove('highlight', 'flash');
-        });
+    // Reset coin interface and finish game
+    coins = 0;
+    coinDisplay.textContent = '0';
+    decreaseCoin.disabled = true;
+    increaseCoin.disabled = false;
+    coinDealButton.classList.remove('visible');
+    mainDealButton.style.display = 'none';
+    gamePhase = "start";
 
-        // Show final results
-        try {
-            const handRank = evaluatePokerHand(currentHand);
-            handTypeDisplay.textContent = HANDS[handRank] || "Invalid Hand";
-            console.log("Final Hand:", currentHand);
-            console.log("Hand Type:", HANDS[handRank]);
-            console.log("Score:", handRank);
-            document.querySelector(".rank-display").classList.add("visible");
-        } catch (error) {
-            console.error("Hand evaluation error:", error);
-            handTypeDisplay.textContent = "Invalid Hand";
-        }
-
-        // Reset coin interface and finish game
-        coins = 0;
-        coinDisplay.textContent = '0';
-        decreaseCoin.disabled = true;
-        increaseCoin.disabled = false;
-        coinDealButton.classList.remove('visible');
-        mainDealButton.style.display = 'none';
-        gamePhase = "start";
-
-        console.log("=== GAME OVER ===");
-        console.log("Press DEAL to play again");
-    };
-
-    // Start the sequence
-    highlightSequence();
+    console.log("=== GAME OVER ===");
+    console.log("Press DEAL to play again");
   }
 
   function handleDealClick() {
