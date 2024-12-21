@@ -135,21 +135,29 @@ document.addEventListener("DOMContentLoaded", () => {
   const cards = document.querySelectorAll(".card");
   const dealButton = document.querySelector(".deal-button");
   const handTypeDisplay = document.querySelector(".hand-type");
-  const handScoreDisplay = document.querySelector(".hand-score");
+  // Remove handScoreDisplay declaration
 
   let currentHand = [];
   let gamePhase = "start";
 
   // Game phase functions
   function startPhase() {
-    // Reset game state
+    console.log('=== STARTING NEW GAME ===');
+    console.log('Resetting game state and UI elements...');
+    
     currentHand = [];
     gamePhase = "start";
+    console.log('Game phase set to:', gamePhase);
 
     // Reset UI elements
     dealButton.textContent = "DEAL";
     handTypeDisplay.textContent = "";
-    handScoreDisplay.textContent = "";
+    // Remove handScoreDisplay reset
+    
+    const rankDisplay = document.querySelector(".rank-display");
+    rankDisplay.classList.remove("visible");
+    handTypeDisplay.textContent = "";
+    // Remove handScoreDisplay reset
 
     // Reset all hold buttons
     holdButtons.forEach((button) => {
@@ -172,41 +180,67 @@ document.addEventListener("DOMContentLoaded", () => {
     // Reset any console state
     console.clear();
     console.log("=== NEW GAME ===");
+    console.log('Game reset complete. Ready for new deal.');
   }
 
   function phase01() {
+    console.log('=== INITIAL DEAL PHASE ===');
+    console.log('Setting up hold buttons...');
+    
     // Initial deal
-    holdButtons.forEach((button) => (button.style.display = "block"));
+    holdButtons.forEach((button) => {
+      button.style.display = "block";
+      button.style.visibility = "hidden";
+      button.classList.remove("show");
+    });
     dealButton.textContent = "DRAW";
 
     const { hand } = dealHand(5);
     currentHand = [...hand];
+    console.log('Initial hand dealt:', currentHand);
 
-    console.log("=== INITIAL DEAL ===");
-    console.log("Dealt hand:", currentHand);
-
+    // Show cards one by one
     cards.forEach((card, index) => {
-      card.className = "card";
-      card.style.backgroundImage = `url('${getCardImagePath(
-        currentHand[index]
-      )}')`;
+      setTimeout(() => {
+        console.log(`Dealing card ${index + 1}:`, currentHand[index]);
+        card.className = "card";
+        card.style.backgroundImage = `url('${getCardImagePath(
+          currentHand[index]
+        )}')`;
+
+        // Show hold button after card is dealt
+        setTimeout(() => {
+          console.log(`Showing hold button for position ${index + 1}`);
+          holdButtons[index].style.visibility = "visible";
+          holdButtons[index].classList.add("show");
+        }, 200); // Delay hold button appearance
+      }, index * 200); // Stagger card dealing
     });
 
     gamePhase = "phase01";
+    console.log('Game phase set to:', gamePhase);
+    console.log('Ready for player to select holds');
   }
 
   function phase02() {
+    console.log('=== DRAW PHASE ===');
+    console.log('Current hand before draw:', currentHand);
+
     // Handle the draw phase
     const heldPositions = Array.from(holdButtons)
       .map((btn, i) => (btn.classList.contains("active") ? i : -1))
       .filter((i) => i !== -1);
+    
+    console.log('Held positions:', heldPositions);
+    console.log('Held cards:', heldPositions.map(i => currentHand[i]));
 
     const { hand: replacementCards } = dealHand(5);
+    console.log('Drew replacement cards:', replacementCards);
 
     // Hide all hold buttons and reset their state
-    holdButtons.forEach(button => {
-      button.style.display = 'none';
-      button.classList.remove('active');
+    holdButtons.forEach((button) => {
+      button.style.display = "none";
+      button.classList.remove("active");
     });
 
     // Replace unheld cards and reset all card positions
@@ -214,34 +248,41 @@ document.addEventListener("DOMContentLoaded", () => {
     currentHand = currentHand.map((card, index) => {
       const cardElement = cards[index];
       if (heldPositions.includes(index)) {
-        cardElement.classList.remove('held'); // Remove held state
+        console.log(`Keeping held card at position ${index + 1}:`, card);
+        cardElement.classList.remove("held"); // Remove held state
         return card;
       } else {
         const newCard = replacementCards[replacementIndex++];
-        cardElement.className = 'card'; // Reset to base class
-        cardElement.style.backgroundImage = `url('${getCardImagePath(newCard)}')`;
+        console.log(`Replacing card at position ${index + 1}:`, newCard);
+        cardElement.className = "card"; // Reset to base class
+        cardElement.style.backgroundImage = `url('${getCardImagePath(
+          newCard
+        )}')`;
         return newCard;
       }
     });
+
+    console.log('Final hand after draw:', currentHand);
 
     // Evaluate final hand and end game
     try {
       const handRank = evaluatePokerHand(currentHand);
       handTypeDisplay.textContent = HANDS[handRank] || "Invalid Hand";
-      handScoreDisplay.textContent = `Score: ${handRank}`;
+      // Remove handScoreDisplay update
       console.log("Final Hand:", currentHand);
       console.log("Hand Type:", HANDS[handRank]);
       console.log("Score:", handRank);
+      document.querySelector(".rank-display").classList.add("visible");
     } catch (error) {
       console.error("Hand evaluation error:", error);
       handTypeDisplay.textContent = "Invalid Hand";
-      handScoreDisplay.textContent = "Score: 0";
+      // Remove handScoreDisplay error state
     }
 
     // End game and prepare for new game
     dealButton.textContent = "DEAL";
     gamePhase = "start"; // Reset to start phase instead of phase02
-    
+
     // Show game over message
     console.log("=== GAME OVER ===");
     console.log("Press DEAL to play again");
@@ -252,16 +293,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Handle card/button holds
   const toggleHold = (index) => {
-    if (gamePhase !== "phase01") return; // Only allow holds during phase 1
+    if (gamePhase !== "phase01") {
+      console.log('Hold attempted outside of hold phase');
+      return;
+    }
 
     const card = cards[index];
     const button = holdButtons[index];
+    const isNowHeld = !button.classList.contains("active");
 
     button.classList.toggle("active");
-    card.classList.add("wiggling");
     card.classList.toggle("held");
+    button.textContent = isNowHeld ? "HELD" : "HOLD";
 
-    setTimeout(() => card.classList.remove("wiggling"), 500);
+    console.log(`Card ${index + 1} (${currentHand[index]}) ${isNowHeld ? 'held' : 'released'}`);
+    console.log('Current held cards:', Array.from(holdButtons)
+      .map((btn, i) => btn.classList.contains("active") ? currentHand[i] : null)
+      .filter(card => card !== null)
+    );
   };
 
   // Event listeners
@@ -275,6 +324,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Main game loop
   dealButton.addEventListener("click", () => {
+    console.log(`Button pressed: ${dealButton.textContent}`);
+    console.log('Current game phase:', gamePhase);
+    
     switch (gamePhase) {
       case "start":
         phase01();

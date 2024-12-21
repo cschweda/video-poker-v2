@@ -8,6 +8,42 @@
   </head>
   <body>
     <div class="game-container">
+      <div class="paytable">
+        <table>
+          <tr>
+            <th>Hand</th>
+            <th>Payout</th>
+          </tr>
+          <tr>
+            <td>Royal Flush</td>
+            <td>800</td>
+          </tr>
+          <tr>
+            <td>Straight Flush</td>
+            <td>50</td>
+          </tr>
+          <tr>
+            <td>Four of a Kind</td>
+            <td>25</td>
+          </tr>
+          <tr>
+            <td>Full House</td>
+            <td>9</td>
+          </tr>
+          <tr>
+            <td>Flush</td>
+            <td>6</td>
+          </tr>
+          <tr>
+            <td>Straight</td>
+            <td>4</td>
+          </tr>
+          <tr>
+            <td>Three of a Kind</td>
+            <td>3</td>
+          </tr>
+        </table>
+      </div>
       <div class="cards-container">
         <div class="card-slot">
           <button class="hold-button">HOLD</button>
@@ -31,8 +67,11 @@
         </div>
       </div>
       <div class="rank-display">
-        <div class="hand-type"></div>
-        <div class="hand-score"></div>
+        <div class="game-over">GAME OVER</div>
+        <div class="rank-info">
+          <div class="rank-label">Hand:</div>
+          <div class="hand-type"></div>
+        </div>
       </div>
       <button class="deal-button">DEAL</button>
     </div>
