@@ -149,7 +149,8 @@ body {
     font-weight: bold;
     height: 50px; /* Fixed height for deal button */
     line-height: 50px;
-    margin: 20px 0;
+    display: block;  /* Add this */
+    margin: 20px auto;  /* Change from '20px 0' to '20px auto' */
 }
 
 .deal-button:hover {

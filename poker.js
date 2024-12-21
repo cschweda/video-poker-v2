@@ -151,6 +151,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Reset UI elements
     dealButton.textContent = "DEAL";
+    dealButton.style.display = 'block'; // Show button at start
     handTypeDisplay.textContent = "";
     // Remove handScoreDisplay reset
     
@@ -193,7 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
       button.style.visibility = "hidden";
       button.classList.remove("show");
     });
-    dealButton.textContent = "DRAW";
+    dealButton.textContent = "DISCARD"; // Changed from "DRAW"
 
     const { hand } = dealHand(5);
     currentHand = [...hand];
@@ -280,7 +281,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // End game and prepare for new game
-    dealButton.textContent = "DEAL";
+    dealButton.style.display = 'none'; // Hide deal button at game over
     gamePhase = "start"; // Reset to start phase instead of phase02
 
     // Show game over message
