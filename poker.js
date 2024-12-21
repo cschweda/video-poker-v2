@@ -151,7 +151,8 @@ document.addEventListener("DOMContentLoaded", () => {
     increaseCoin.disabled = gamePhase !== "start" || coins >= 5;
     // Only show coin deal button in start phase with coins
     coinDealButton.classList.toggle('visible', gamePhase === "start" && coins > 0);
-    mainDealButton.style.display = coins > 0 ? 'block' : 'none';
+    // Main deal button only visible during discard phase
+    mainDealButton.style.display = gamePhase === "phase01" ? 'block' : 'none';
     
     // Hide rank display when coins are added
     if (coins > 0) {
@@ -226,6 +227,9 @@ document.addEventListener("DOMContentLoaded", () => {
     updateCoinInterface();
     decreaseCoin.disabled = true; // Initially disabled because coins = 0
     increaseCoin.disabled = false;
+
+    // Hide instruction text
+    document.querySelector('.instruction-text').classList.remove('visible');
   }
 
   function phase01() {
@@ -242,6 +246,7 @@ document.addEventListener("DOMContentLoaded", () => {
         button.classList.remove("active");
     });
     mainDealButton.textContent = "DISCARD";
+    mainDealButton.style.display = 'block'; // Show main button for discard phase
 
     const { hand } = dealHand(5);
     currentHand = [...hand];
@@ -268,11 +273,19 @@ document.addEventListener("DOMContentLoaded", () => {
     gamePhase = "phase01";
     console.log('Game phase set to:', gamePhase);
     console.log('Ready for player to select holds');
+
+    // Show instruction text after cards are dealt
+    setTimeout(() => {
+        document.querySelector('.instruction-text').classList.add('visible');
+    }, 1000);
   }
 
   function phase02() {
     console.log('=== DRAW PHASE ===');
     console.log('Current hand before draw:', currentHand);
+
+    // Hide instruction text
+    document.querySelector('.instruction-text').classList.remove('visible');
 
     // Handle the draw phase
     const heldPositions = Array.from(holdButtons)
@@ -312,35 +325,60 @@ document.addEventListener("DOMContentLoaded", () => {
 
     console.log('Final hand after draw:', currentHand);
 
-    // Evaluate final hand and end game
-    try {
-      const handRank = evaluatePokerHand(currentHand);
-      handTypeDisplay.textContent = HANDS[handRank] || "Invalid Hand";
-      // Remove handScoreDisplay update
-      console.log("Final Hand:", currentHand);
-      console.log("Hand Type:", HANDS[handRank]);
-      console.log("Score:", handRank);
-      document.querySelector(".rank-display").classList.add("visible");
-    } catch (error) {
-      console.error("Hand evaluation error:", error);
-      handTypeDisplay.textContent = "Invalid Hand";
-      // Remove handScoreDisplay error state
-    }
+    // Highlight each card sequentially, then flash all cards, then show result
+    const highlightSequence = async () => {
+        // First highlight each card sequentially
+        for (let i = 0; i < cards.length; i++) {
+            await new Promise(resolve => {
+                setTimeout(() => {
+                    cards[i].classList.add('highlight');
+                    resolve();
+                }, 300);
+            });
+        }
 
-    // Reset coin interface at game over
-    coins = 0;
-    coinDisplay.textContent = '0';
-    decreaseCoin.disabled = true;  // Initially disabled because coins = 0
-    increaseCoin.disabled = false; // Enable coin insertion for next game
-    coinDealButton.classList.remove('visible');
+        // Wait a moment after all cards are highlighted
+        await new Promise(resolve => setTimeout(resolve, 500));
 
-    // End game and prepare for new game
-    mainDealButton.style.display = 'none';
-    gamePhase = "start";
+        // Flash all cards twice
+        cards.forEach(card => card.classList.add('flash'));
 
-    // Show game over message
-    console.log("=== GAME OVER ===");
-    console.log("Press DEAL to play again");
+        // Wait for flash animation to complete
+        await new Promise(resolve => setTimeout(resolve, 600)); // 0.3s × 2 flashes
+
+        // Remove highlight and flash classes
+        cards.forEach(card => {
+            card.classList.remove('highlight', 'flash');
+        });
+
+        // Show final results
+        try {
+            const handRank = evaluatePokerHand(currentHand);
+            handTypeDisplay.textContent = HANDS[handRank] || "Invalid Hand";
+            console.log("Final Hand:", currentHand);
+            console.log("Hand Type:", HANDS[handRank]);
+            console.log("Score:", handRank);
+            document.querySelector(".rank-display").classList.add("visible");
+        } catch (error) {
+            console.error("Hand evaluation error:", error);
+            handTypeDisplay.textContent = "Invalid Hand";
+        }
+
+        // Reset coin interface and finish game
+        coins = 0;
+        coinDisplay.textContent = '0';
+        decreaseCoin.disabled = true;
+        increaseCoin.disabled = false;
+        coinDealButton.classList.remove('visible');
+        mainDealButton.style.display = 'none';
+        gamePhase = "start";
+
+        console.log("=== GAME OVER ===");
+        console.log("Press DEAL to play again");
+    };
+
+    // Start the sequence
+    highlightSequence();
   }
 
   function handleDealClick() {

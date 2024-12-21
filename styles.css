@@ -121,6 +121,25 @@ body {
     100% { transform: translateY(-30px) rotate(0deg); }
 }
 
+@keyframes cardFlash {
+    0% { 
+        border-color: #00ffff;
+        box-shadow: 0 0 0 4px #00ffff, 0 0 25px rgba(0, 255, 255, 0.6);
+    }
+    50% { 
+        border-color: transparent;
+        box-shadow: none;
+    }
+    100% { 
+        border-color: #00ffff;
+        box-shadow: 0 0 0 4px #00ffff, 0 0 25px rgba(0, 255, 255, 0.6);
+    }
+}
+
+.card.flash {
+    animation: cardFlash 0.3s ease-in-out 2;
+}
+
 .card.wiggling {
     animation: initialHold 0.3s ease forwards;
 }
@@ -128,6 +147,15 @@ body {
 .card:not(.held) {
     animation: none;
     transform: translateY(0);
+}
+
+.card.highlight {
+    border-color: #00ffff; /* Bright cyan instead of gold */
+    box-shadow: 
+        0 0 0 4px #00ffff, /* Thicker border - changed from 2px to 4px */
+        0 0 25px rgba(0, 255, 255, 0.6); /* Matching glow effect */
+    transform: scale(1.02);
+    transition: all 0.2s ease;
 }
 
 .deal-button {
@@ -380,4 +408,18 @@ body {
 
 .coin-deal-button.visible {
     display: block;
+}
+
+.instruction-text {
+    color: #aaa;
+    font-size: 0.7em;
+    text-align: center;
+    margin-bottom: 5px;
+    font-style: italic;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.instruction-text.visible {
+    opacity: 1;
 }
