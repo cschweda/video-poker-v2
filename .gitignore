@@ -33,6 +33,4 @@ yarn-error.log*
 ehthumbs.db
 Thumbs.db
 
-# Project specific
-images/cards/*.png
-!images/cards/back.png
+
