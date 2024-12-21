@@ -8,41 +8,104 @@
   </head>
   <body>
     <div class="game-container">
-      <div class="paytable">
-        <table>
-          <tr>
-            <th>Hand</th>
-            <th>Payout</th>
-          </tr>
-          <tr>
-            <td>Royal Flush</td>
-            <td>800</td>
-          </tr>
-          <tr>
-            <td>Straight Flush</td>
-            <td>50</td>
-          </tr>
-          <tr>
-            <td>Four of a Kind</td>
-            <td>25</td>
-          </tr>
-          <tr>
-            <td>Full House</td>
-            <td>9</td>
-          </tr>
-          <tr>
-            <td>Flush</td>
-            <td>6</td>
-          </tr>
-          <tr>
-            <td>Straight</td>
-            <td>4</td>
-          </tr>
-          <tr>
-            <td>Three of a Kind</td>
-            <td>3</td>
-          </tr>
-        </table>
+      <div class="table-container">
+        <div class="coin-interface">
+          <div class="coin-input">
+            <button class="coin-button" id="decreaseCoin">-</button>
+            <div class="coin-display">0</div>
+            <button class="coin-button" id="increaseCoin">+</button>
+          </div>
+          <button class="coin-deal-button">DEAL</button>
+        </div>
+        <div class="paytable">
+          <table>
+            <tr>
+              <th>Hand</th>
+              <th>Odds</th>
+              <th colspan="5">Nickels</th>
+            </tr>
+            <tr class="token-header">
+              <td colspan="2" class="separator"></td>
+              <td>1</td>
+              <td>2</td>
+              <td>3</td>
+              <td>4</td>
+              <td>5</td>
+            </tr>
+            <tr>
+              <td>Royal Flush</td>
+              <td>1:649,740</td>
+              <td>800</td>
+              <td>1600</td>
+              <td>2400</td>
+              <td>3200</td>
+              <td>4000</td>
+            </tr>
+            <tr>
+              <td>Straight Flush</td>
+              <td>1:72,193</td>
+              <td>50</td>
+              <td>100</td>
+              <td>150</td>
+              <td>200</td>
+              <td>250</td>
+            </tr>
+            <tr>
+              <td>Four of a Kind</td>
+              <td>1:4,165</td>
+              <td>25</td>
+              <td>50</td>
+              <td>75</td>
+              <td>100</td>
+              <td>125</td>
+            </tr>
+            <tr>
+              <td>Full House</td>
+              <td>1:694</td>
+              <td>9</td>
+              <td>18</td>
+              <td>27</td>
+              <td>36</td>
+              <td>45</td>
+            </tr>
+            <tr>
+              <td>Flush</td>
+              <td>1:509</td>
+              <td>6</td>
+              <td>12</td>
+              <td>18</td>
+              <td>24</td>
+              <td>30</td>
+            </tr>
+            <tr>
+              <td>Straight</td>
+              <td>1:255</td>
+              <td>4</td>
+              <td>8</td>
+              <td>12</td>
+              <td>16</td>
+              <td>20</td>
+            </tr>
+            <tr>
+              <td>Three of a Kind</td>
+              <td>1:47</td>
+              <td>3</td>
+              <td>6</td>
+              <td>9</td>
+              <td>12</td>
+              <td>15</td>
+            </tr>
+            <tr>
+              <td>High Pair</td>
+              <td>1:7.69</td>
+              <td>1</td>
+              <td>2</td>
+              <td>3</td>
+              <td>4</td>
+              <td>5</td>
+            </tr>
+          </table>
+        </div>
       </div>
       <div class="cards-container">
         <div class="card-slot">

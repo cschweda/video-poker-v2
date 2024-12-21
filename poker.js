@@ -133,9 +133,47 @@ function getCardImagePath(cardCode) {
 document.addEventListener("DOMContentLoaded", () => {
   const holdButtons = document.querySelectorAll(".hold-button");
   const cards = document.querySelectorAll(".card");
-  const dealButton = document.querySelector(".deal-button");
+  const mainDealButton = document.querySelector(".deal-button");
   const handTypeDisplay = document.querySelector(".hand-type");
   // Remove handScoreDisplay declaration
+
+  const increaseCoin = document.querySelector("#increaseCoin");
+  const decreaseCoin = document.querySelector("#decreaseCoin");
+  const coinDisplay = document.querySelector(".coin-display");
+  const coinDealButton = document.querySelector(".coin-deal-button");
+  
+  let coins = 0;
+
+  function updateCoinInterface() {
+    coinDisplay.textContent = coins;
+    // Only enable coin buttons in start phase
+    decreaseCoin.disabled = gamePhase !== "start" || coins <= 0;
+    increaseCoin.disabled = gamePhase !== "start" || coins >= 5;
+    // Only show coin deal button in start phase with coins
+    coinDealButton.classList.toggle('visible', gamePhase === "start" && coins > 0);
+    mainDealButton.style.display = coins > 0 ? 'block' : 'none';
+    
+    // Hide rank display when coins are added
+    if (coins > 0) {
+        const rankDisplay = document.querySelector(".rank-display");
+        rankDisplay.classList.remove("visible");
+        handTypeDisplay.textContent = "";
+    }
+  }
+
+  increaseCoin.addEventListener('click', () => {
+    if (coins < 5) {
+      coins++;
+      updateCoinInterface();
+    }
+  });
+
+  decreaseCoin.addEventListener('click', () => {
+    if (coins > 0) {
+      coins--;
+      updateCoinInterface();
+    }
+  });
 
   let currentHand = [];
   let gamePhase = "start";
@@ -150,8 +188,8 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log('Game phase set to:', gamePhase);
 
     // Reset UI elements
-    dealButton.textContent = "DEAL";
-    dealButton.style.display = 'block'; // Show button at start
+    mainDealButton.textContent = "DEAL";
+    mainDealButton.style.display = 'block'; // Show button at start
     handTypeDisplay.textContent = "";
     // Remove handScoreDisplay reset
     
@@ -182,19 +220,28 @@ document.addEventListener("DOMContentLoaded", () => {
     console.clear();
     console.log("=== NEW GAME ===");
     console.log('Game reset complete. Ready for new deal.');
+
+    // Reset and enable coin interface
+    coins = 0;
+    updateCoinInterface();
+    decreaseCoin.disabled = true; // Initially disabled because coins = 0
+    increaseCoin.disabled = false;
   }
 
   function phase01() {
     console.log('=== INITIAL DEAL PHASE ===');
-    console.log('Setting up hold buttons...');
+    
+    // Disable coin interface after dealing
+    decreaseCoin.disabled = true;
+    increaseCoin.disabled = true;
+    coinDealButton.classList.remove('visible');
     
     // Initial deal
     holdButtons.forEach((button) => {
-      button.style.display = "block";
-      button.style.visibility = "hidden";
-      button.classList.remove("show");
+        button.style.display = "block";
+        button.classList.remove("active");
     });
-    dealButton.textContent = "DISCARD"; // Changed from "DRAW"
+    mainDealButton.textContent = "DISCARD";
 
     const { hand } = dealHand(5);
     currentHand = [...hand];
@@ -280,13 +327,42 @@ document.addEventListener("DOMContentLoaded", () => {
       // Remove handScoreDisplay error state
     }
 
+    // Reset coin interface at game over
+    coins = 0;
+    coinDisplay.textContent = '0';
+    decreaseCoin.disabled = true;  // Initially disabled because coins = 0
+    increaseCoin.disabled = false; // Enable coin insertion for next game
+    coinDealButton.classList.remove('visible');
+
     // End game and prepare for new game
-    dealButton.style.display = 'none'; // Hide deal button at game over
-    gamePhase = "start"; // Reset to start phase instead of phase02
+    mainDealButton.style.display = 'none';
+    gamePhase = "start";
 
     // Show game over message
     console.log("=== GAME OVER ===");
     console.log("Press DEAL to play again");
+  }
+
+  function handleDealClick() {
+    if (gamePhase === "start" && coins === 0) {
+      console.log('Cannot deal: No coins inserted');
+      return;
+    }
+    
+    console.log(`Deal button pressed: ${gamePhase}`);
+    console.log('Current game phase:', gamePhase);
+    
+    switch (gamePhase) {
+      case "start":
+        phase01();
+        break;
+      case "phase01":
+        phase02();
+        break;
+      case "phase02":
+        startPhase();
+        break;
+    }
   }
 
   // Initialize game
@@ -305,7 +381,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     button.classList.toggle("active");
     card.classList.toggle("held");
-    button.textContent = isNowHeld ? "HELD" : "HOLD";
 
     console.log(`Card ${index + 1} (${currentHand[index]}) ${isNowHeld ? 'held' : 'released'}`);
     console.log('Current held cards:', Array.from(holdButtons)
@@ -324,20 +399,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // Main game loop
-  dealButton.addEventListener("click", () => {
-    console.log(`Button pressed: ${dealButton.textContent}`);
-    console.log('Current game phase:', gamePhase);
-    
-    switch (gamePhase) {
-      case "start":
-        phase01();
-        break;
-      case "phase01":
-        phase02();
-        break;
-      case "phase02":
-        startPhase();
-        break;
-    }
-  });
+  mainDealButton.addEventListener("click", handleDealClick);
+  coinDealButton.addEventListener("click", handleDealClick);
 });
