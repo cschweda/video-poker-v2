@@ -2,6 +2,7 @@
     max-width: 1000px;
     margin: 50px auto;
     text-align: center;
+    margin-top: 50px;
 }
 
 .cards-container {
@@ -16,7 +17,8 @@
 }
 
 .hold-button {
-    position: absolute;
+    position: relative;
+    margin-bottom: 10px;
     top: -40px;
     left: 50%;
     transform: translateX(-50%);
@@ -36,9 +38,10 @@
 }
 
 .card {
-    width: 100px;
-    height: 145px;
-    background-size: cover;
+    width: 150px;
+    height: 218px;
+    background-size: contain;
+    background-repeat: no-repeat;
     background-position: center;
     border-radius: 5px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
@@ -47,6 +50,7 @@
     position: relative;
     overflow: hidden;
     border: none; /* Remove default border */
+    transition: transform 0.3s ease;
 }
 
 .card-back {
@@ -60,6 +64,29 @@
         #465298 20px
     );
     border: 2px solid #fff; /* Keep border only for card back */
+}
+
+/* Add new animation keyframes */
+@keyframes wiggle {
+    0% { transform: rotate(0deg); }
+    25% { transform: rotate(-3deg); }
+    75% { transform: rotate(3deg); }
+    100% { transform: rotate(0deg) translateY(-20px); } /* Increased from -10px to -20px */
+}
+
+/* Update held card state */
+.card.held {
+    transform: translateY(-20px); /* Increased from -10px to -20px */
+    box-shadow: 
+        0 12px 20px rgba(0,0,0,0.3),
+        0 0 0 3px #ff0000,        /* Red border */
+        0 0 10px rgba(255,0,0,0.5); /* Glowing effect */
+    border-radius: 8px;
+}
+
+/* Animation class that will be added temporarily */
+.card.wiggling {
+    animation: wiggle 0.5s ease-in-out forwards;
 }
 
 .deal-button {

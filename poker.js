@@ -125,6 +125,35 @@ document.addEventListener('DOMContentLoaded', () => {
     let isFirstDeal = true;
     let currentHand = [];
 
+    // Update toggle function with animation
+    const toggleHold = (index) => {
+        const card = cards[index];
+        const button = holdButtons[index];
+        
+        // Toggle hold button state
+        button.classList.toggle('active');
+        
+        // Add wiggle animation
+        card.classList.add('wiggling');
+        
+        // Toggle held state
+        card.classList.toggle('held');
+        
+        // Remove wiggle class after animation completes
+        setTimeout(() => {
+            card.classList.remove('wiggling');
+        }, 500); // Match animation duration
+    };
+
+    // Add click handlers for both hold buttons and cards
+    holdButtons.forEach((button, index) => {
+        button.addEventListener('click', () => toggleHold(index));
+    });
+
+    cards.forEach((card, index) => {
+        card.addEventListener('click', () => toggleHold(index));
+    });
+
     dealButton.addEventListener('click', () => {
         if (isFirstDeal) {
             holdButtons.forEach(button => button.style.display = 'block');
@@ -151,12 +180,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 card.className = 'card';
                 card.style.backgroundImage = `url('${getCardImagePath(hand[index])}')`;
             }
-        });
-    });
-
-    holdButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            button.classList.toggle('active');
         });
     });
 });
