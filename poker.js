@@ -131,7 +131,6 @@ function getCardImagePath(cardCode) {
   return `images/cards/${cardCode.toLowerCase()}.png`;
 }
 
-// Main game logic
 document.addEventListener("DOMContentLoaded", () => {
   const holdButtons = document.querySelectorAll(".hold-button");
   const cards = document.querySelectorAll(".card");
@@ -143,8 +142,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const decreaseCoin = document.querySelector("#decreaseCoin");
   const coinDisplay = document.querySelector(".coin-display");
   const coinDealButton = document.querySelector(".coin-deal-button");
-  
+  const betMaxCoin = document.querySelector("#betMaxCoin");
+
   let coins = 0;
+
+  function updateBankrollDisplay() {
+    const bankrollAmountEl = document.querySelector(".bankroll-amount");
+    if (bankrollAmountEl) {
+      bankrollAmountEl.textContent = bankroll - coins; // Fix: now has access to coins
+    }
+  }
 
   function updateCoinInterface() {
     coinDisplay.textContent = coins;
@@ -152,39 +159,60 @@ document.addEventListener("DOMContentLoaded", () => {
     decreaseCoin.disabled = gamePhase !== "start" || coins <= 0;
     increaseCoin.disabled = gamePhase !== "start" || coins >= 5;
     // Only show coin deal button in start phase with coins
-    coinDealButton.classList.toggle('visible', gamePhase === "start" && coins > 0);
+    coinDealButton.classList.toggle(
+      "visible",
+      gamePhase === "start" && coins > 0
+    );
     // Main deal button only visible during discard phase
-    mainDealButton.style.display = gamePhase === "phase01" ? 'block' : 'none';
-    
+    mainDealButton.style.display = gamePhase === "phase01" ? "block" : "none";
+
     // Hide rank display when coins are added
     if (coins > 0) {
-        const rankDisplay = document.querySelector(".rank-display");
-        rankDisplay.classList.remove("visible");
-        handTypeDisplay.textContent = "";
+      const rankDisplay = document.querySelector(".rank-display");
+      rankDisplay.classList.remove("visible");
+      handTypeDisplay.textContent = "";
     }
 
     // Highlight the appropriate column in the ranking table
-    const paytableCells = document.querySelectorAll('.paytable td, .paytable th');
-    paytableCells.forEach(cell => cell.classList.remove('highlight'));
+    const paytableCells = document.querySelectorAll(
+      ".paytable td, .paytable th"
+    );
+    paytableCells.forEach((cell) => cell.classList.remove("highlight"));
     if (coins > 0) {
-        const columnIndex = coins + 2; // Adjust for 1-based index and extra columns
-        const cellsToHighlight = document.querySelectorAll(`.paytable td:nth-child(${columnIndex}), .paytable th:nth-child(${columnIndex})`);
-        cellsToHighlight.forEach(cell => cell.classList.add('highlight'));
+      const columnIndex = coins + 2; // Adjust for 1-based index and extra columns
+      const cellsToHighlight = document.querySelectorAll(
+        `.paytable td:nth-child(${columnIndex}), .paytable th:nth-child(${columnIndex})`
+      );
+      cellsToHighlight.forEach((cell) => cell.classList.add("highlight"));
     }
+
+    updateBankrollDisplay(); // Reflect net bankroll as coins change
+
+    // Flip cards to backs
+    cards.forEach((card) => {
+      card.className = "card card-back";
+      card.style.backgroundImage = `url('${getCardImagePath()}')`;
+    });
   }
 
-  increaseCoin.addEventListener('click', () => {
+  increaseCoin.addEventListener("click", () => {
     if (coins < 5) {
       coins++;
       updateCoinInterface();
     }
   });
 
-  decreaseCoin.addEventListener('click', () => {
+  decreaseCoin.addEventListener("click", () => {
     if (coins > 0) {
       coins--;
       updateCoinInterface();
     }
+  });
+
+  betMaxCoin.addEventListener("click", () => {
+    coins = 5;
+    updateCoinInterface();
+    handleDealClick(); // Start the game
   });
 
   let currentHand = [];
@@ -192,20 +220,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Game phase functions
   function startPhase() {
-    console.log('=== STARTING NEW GAME ===');
-    
+    console.log("=== STARTING NEW GAME ===");
+
     currentHand = [];
     gamePhase = "start";
-    console.log('Current Bankroll:', bankroll);
+    console.log("Current Bankroll:", bankroll);
+
+    updateBankrollDisplay(); // Update bankroll widget
 
     // Reset UI elements
     mainDealButton.textContent = "DEAL";
-    mainDealButton.style.display = 'block'; // Show button at start
+    mainDealButton.style.display = "block"; // Show button at start
     handTypeDisplay.textContent = "";
-    
+
     const rankDisplay = document.querySelector(".rank-display");
     rankDisplay.classList.remove("visible");
     handTypeDisplay.textContent = "";
+
+    // Remove highlight from paytable columns
+    const paytableCells = document.querySelectorAll(
+      ".paytable td, .paytable th"
+    );
+    paytableCells.forEach((cell) => cell.classList.remove("highlight"));
 
     // Reset all hold buttons
     holdButtons.forEach((button) => {
@@ -230,39 +266,42 @@ document.addEventListener("DOMContentLoaded", () => {
     increaseCoin.disabled = false;
 
     // Hide instruction text
-    document.querySelector('.instruction-text').classList.remove('visible');
+    document.querySelector(".instruction-text").classList.remove("visible");
   }
 
   function phase01() {
-    console.log('=== INITIAL DEAL PHASE ===');
-    
+    console.log("=== INITIAL DEAL PHASE ===");
+
     // Disable coin interface after dealing
     decreaseCoin.disabled = true;
     increaseCoin.disabled = true;
-    coinDealButton.classList.remove('visible');
-    
+    coinDealButton.classList.remove("visible");
+
     // Deduct coins from bankroll
     bankroll -= coins;
-    console.log('Wager:', coins);
-    console.log('Bankroll after wager:', bankroll);
+    updateBankrollDisplay(); // Update after subtracting wager
+    console.log("Wager:", coins);
+    console.log("Bankroll after wager:", bankroll);
 
     // Initial deal
     holdButtons.forEach((button) => {
-        button.style.display = "block";
-        button.classList.remove("active");
+      button.style.display = "block";
+      button.classList.remove("active");
     });
     mainDealButton.textContent = "DISCARD";
-    mainDealButton.style.display = 'block'; // Show main button for discard phase
+    mainDealButton.style.display = "block"; // Show main button for discard phase
 
     const { hand } = dealHand(5);
     currentHand = [...hand];
-    console.log('Initial hand dealt:', currentHand);
+    console.log("Initial hand dealt:", currentHand);
 
     // Show cards one by one
     cards.forEach((card, index) => {
       setTimeout(() => {
         card.className = "card";
-        card.style.backgroundImage = `url('${getCardImagePath(currentHand[index])}')`;
+        card.style.backgroundImage = `url('${getCardImagePath(
+          currentHand[index]
+        )}')`;
 
         // Show hold button after card is dealt
         setTimeout(() => {
@@ -273,14 +312,14 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     gamePhase = "phase01";
-    console.log('Ready for player to select holds');
+    console.log("Ready for player to select holds");
   }
 
   function phase02() {
-    console.log('=== DRAW PHASE ===');
+    console.log("=== DRAW PHASE ===");
 
     // Hide instruction text
-    document.querySelector('.instruction-text').classList.remove('visible');
+    document.querySelector(".instruction-text").classList.remove("visible");
 
     // Handle the draw phase
     const heldPositions = Array.from(holdButtons)
@@ -305,7 +344,9 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         const newCard = replacementCards[replacementIndex++];
         cardElement.className = "card"; // Reset to base class
-        cardElement.style.backgroundImage = `url('${getCardImagePath(newCard)}')`;
+        cardElement.style.backgroundImage = `url('${getCardImagePath(
+          newCard
+        )}')`;
         return newCard;
       }
     });
@@ -315,56 +356,61 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Show final results
     try {
-        const handRank = evaluatePokerHand(currentHand);
-        handTypeDisplay.innerHTML = HANDS[handRank] || "Invalid Hand";
-        console.log("Final Hand:", currentHand);
-        console.log("Hand Type:", HANDS[handRank]);
+      const handRank = evaluatePokerHand(currentHand);
+      handTypeDisplay.innerHTML = HANDS[handRank] || "Invalid Hand";
+      console.log("Final Hand:", currentHand);
+      console.log("Hand Type:", HANDS[handRank]);
 
-        // Calculate and display winnings
-        const payoutTable = [
-            [0, 0, 0, 0, 0], // Invalid Hand
-            [0, 0, 0, 0, 0], // High Card
-            [1, 2, 3, 4, 5], // One Pair
-            [2, 4, 6, 8, 10], // Two Pair
-            [3, 6, 9, 12, 15], // Three of a Kind
-            [4, 8, 12, 16, 20], // Straight
-            [6, 12, 18, 24, 30], // Flush
-            [9, 18, 27, 36, 45], // Full House
-            [25, 50, 75, 100, 125], // Four of a Kind
-            [50, 100, 150, 200, 250], // Straight Flush
-            [800, 1600, 2400, 3200, 4000] // Royal Flush
-        ];
-        const winnings = handRank >= 2 ? payoutTable[handRank][coins - 1] || 0 : 0;
-        document.querySelector(".winnings-amount").textContent = winnings;
-        console.log("Winnings:", winnings);
+      // Calculate and display winnings
+      const payoutTable = [
+        [0, 0, 0, 0, 0], // Invalid Hand
+        [0, 0, 0, 0, 0], // High Card
+        [1, 2, 3, 4, 5], // One Pair
+        [2, 4, 6, 8, 10], // Two Pair
+        [3, 6, 9, 12, 15], // Three of a Kind
+        [4, 8, 12, 16, 20], // Straight
+        [6, 12, 18, 24, 30], // Flush
+        [9, 18, 27, 36, 45], // Full House
+        [25, 50, 75, 100, 125], // Four of a Kind
+        [50, 100, 150, 200, 250], // Straight Flush
+        [800, 1600, 2400, 3200, 4000], // Royal Flush
+      ];
+      const winnings =
+        handRank >= 2 ? payoutTable[handRank][coins - 1] || 0 : 0;
+      document.querySelector(".winnings-amount").textContent = winnings;
+      console.log("Winnings:", winnings);
 
-        // Add winnings to bankroll
-        bankroll += winnings;
-        console.log('Bankroll after winnings:', bankroll);
+      // Add winnings to bankroll
+      bankroll += winnings;
+      updateBankrollDisplay(); // Update after adding winnings
+      console.log("Bankroll after winnings:", bankroll);
     } catch (error) {
-        console.error("Hand evaluation error:", error);
-        handTypeDisplay.innerHTML = "Invalid Hand";
-        document.querySelector(".winnings-amount").textContent = "0";
+      console.error("Hand evaluation error:", error);
+      handTypeDisplay.innerHTML = "Invalid Hand";
+      document.querySelector(".winnings-amount").textContent = "0";
     }
 
     // Reset coin interface and finish game
     coins = 0;
-    coinDisplay.textContent = '0';
+    coinDisplay.textContent = "0";
     decreaseCoin.disabled = true;
     increaseCoin.disabled = false;
-    coinDealButton.classList.remove('visible');
-    mainDealButton.style.display = 'none';
+    coinDealButton.classList.remove("visible");
+    mainDealButton.style.display = "none";
     gamePhase = "start";
 
     console.log("=== GAME OVER ===");
+
+    // Update bankroll at game over
+    updateBankrollDisplay();
   }
 
   function handleDealClick() {
     if (gamePhase === "start" && coins === 0) {
-      console.log('Cannot deal: No coins inserted');
+      console.log("Cannot deal: No coins inserted");
       return;
     }
-    
+
     switch (gamePhase) {
       case "start":
         phase01();
@@ -384,7 +430,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Handle card/button holds
   const toggleHold = (index) => {
     if (gamePhase !== "phase01") {
-      console.log('Hold attempted outside of hold phase');
+      console.log("Hold attempted outside of hold phase");
       return;
     }
 
@@ -395,10 +441,18 @@ document.addEventListener("DOMContentLoaded", () => {
     button.classList.toggle("active");
     card.classList.toggle("held");
 
-    console.log(`Card ${index + 1} (${currentHand[index]}) ${isNowHeld ? 'held' : 'released'}`);
-    console.log('Current held cards:', Array.from(holdButtons)
-      .map((btn, i) => btn.classList.contains("active") ? currentHand[i] : null)
-      .filter(card => card !== null)
+    console.log(
+      `Card ${index + 1} (${currentHand[index]}) ${
+        isNowHeld ? "held" : "released"
+      }`
+    );
+    console.log(
+      "Current held cards:",
+      Array.from(holdButtons)
+        .map((btn, i) =>
+          btn.classList.contains("active") ? currentHand[i] : null
+        )
+        .filter((card) => card !== null)
     );
   };
 

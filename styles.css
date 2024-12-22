@@ -370,6 +370,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center; /* Center vertically */
     gap: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     margin: 0 auto; /* Center horizontally */
@@ -508,4 +509,42 @@ body {
     100% {
         transform: translateX(-100%);
     }
+}
+
+.bankroll-widget {
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    flex: 1; /* Match coin-interface and rank-display size */
+    justify-content: center;
+    margin: 0 auto;
+}
+
+.bankroll-label {
+    color: #aaa;
+    font-size: 1.1em;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    font-weight: bold;
+}
+
+.bankroll-amount {
+    color: #ffd700;
+    font-size: 2em;
+    font-weight: bold;
+    text-align: center;
+}
+
+#betMaxCoin {
+    background: linear-gradient(145deg, #ff0000, #cc0000); /* Change background color to red */
+    font-size: 0.8em; /* Reduce font size */
+    width: auto; /* Ensure it doesn't have the circular shape */
+    padding: 10px 20px; /* Add padding for better appearance */
+    border-radius: 5px; /* Match other buttons */
 }
