@@ -511,14 +511,6 @@ body {
     text-align: center;
 }
 
-#betMaxCoin {
-    background: linear-gradient(145deg, #ff0000, #cc0000); /* Change background color to red */
-    font-size: 0.8em; /* Reduce font size */
-    width: auto; /* Ensure it doesn't have the circular shape */
-    padding: 10px 20px; /* Add padding for better appearance */
-    border-radius: 5px; /* Match other buttons */
-}
-
 .export-button {
     margin: 10px auto;
     padding: 10px 20px;

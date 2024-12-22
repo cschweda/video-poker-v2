@@ -139,6 +139,20 @@ function getCardImagePath(cardCode) {
   return `images/cards/${cardCode.toLowerCase()}.png`;
 }
 
+// First, declare all game state variables at the top
+const gamePhase = {
+  BETTING: "betting",
+  FIRST_DEAL: "firstDeal",
+  DRAW: "draw",
+  GAME_OVER: "gameOver",
+};
+
+// Game state object
+const gameState = {
+  currentPhase: gamePhase.BETTING,
+  // ...rest of gameState properties...
+};
+
 document.addEventListener("DOMContentLoaded", () => {
   // Add odds lookup table at the top of the DOM content loaded handler
   const HAND_ODDS = {
@@ -164,7 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const decreaseCoin = document.querySelector("#decreaseCoin");
   const coinDisplay = document.querySelector(".coin-display");
   const coinDealButton = document.querySelector(".coin-deal-button");
-  const betMaxCoin = document.querySelector("#betMaxCoin");
+  // Remove betMaxCoin declaration
 
   let coins = 0;
 
@@ -175,18 +189,17 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function updateCoinInterface() {
+  const updateCoinInterface = () => {
+    const isBettingPhase = gameState.currentPhase === gamePhase.BETTING;
     coinDisplay.textContent = coins;
     // Only enable coin buttons in start phase
-    decreaseCoin.disabled = gamePhase !== "start" || coins <= 0;
-    increaseCoin.disabled = gamePhase !== "start" || coins >= 5;
+    decreaseCoin.disabled = !isBettingPhase || coins <= 0;
+    increaseCoin.disabled = !isBettingPhase || coins >= 5;
     // Only show coin deal button in start phase with coins
-    coinDealButton.classList.toggle(
-      "visible",
-      gamePhase === "start" && coins > 0
-    );
+    coinDealButton.classList.toggle("visible", isBettingPhase && coins > 0);
     // Main deal button only visible during discard phase
-    mainDealButton.style.display = gamePhase === "phase01" ? "block" : "none";
+    mainDealButton.style.display =
+      gameState.currentPhase === gamePhase.FIRST_DEAL ? "block" : "none";
 
     // Hide rank display when coins are added
     if (coins > 0) {
@@ -215,7 +228,7 @@ document.addEventListener("DOMContentLoaded", () => {
       card.className = "card card-back";
       card.style.backgroundImage = `url('${getCardImagePath()}')`;
     });
-  }
+  };
 
   increaseCoin.addEventListener("click", () => {
     if (coins < 5) {
@@ -231,14 +244,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  betMaxCoin.addEventListener("click", () => {
-    coins = 5;
-    updateCoinInterface();
-    handleDealClick(); // Start the game
-  });
-
   let currentHand = [];
-  let gamePhase = "start";
 
   // Add session stats tracking with localStorage persistence
   const savedSessionStats = localStorage.getItem("pokerSessionStats");
@@ -484,9 +490,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }, index * 200);
     });
 
-    gamePhase = "phase01";
+    gameState.currentPhase = gamePhase.FIRST_DEAL;
     console.log("Ready for player to select holds");
-    betMaxCoin.disabled = true;
   }
 
   // Game phase functions
@@ -494,7 +499,7 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("=== STARTING NEW GAME ===");
 
     currentHand = [];
-    gamePhase = "start";
+    gameState.currentPhase = gamePhase.BETTING;
     console.log("Current Bankroll:", bankroll);
 
     updateBankrollDisplay(); // Update bankroll widget
@@ -538,9 +543,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Hide instruction text
     document.querySelector(".instruction-text").classList.remove("visible");
-
-    // Enable bet max button at start
-    betMaxCoin.disabled = false;
 
     // Hide export button at start
     document.getElementById("exportStats").style.cssText =
@@ -651,31 +653,28 @@ document.addEventListener("DOMContentLoaded", () => {
     increaseCoin.disabled = false;
     coinDealButton.classList.remove("visible");
     mainDealButton.style.display = "none";
-    gamePhase = "start";
+    gameState.currentPhase = gamePhase.BETTING;
 
     console.log("=== GAME OVER ===");
 
     // Update bankroll at game over
     updateBankrollDisplay();
-
-    // Re-enable bet max button at game over
-    betMaxCoin.disabled = false;
   }
 
   function handleDealClick() {
-    if (gamePhase === "start" && coins === 0) {
+    if (gameState.currentPhase === gamePhase.BETTING && coins === 0) {
       console.log("Cannot deal: No coins inserted");
       return;
     }
 
-    switch (gamePhase) {
-      case "start":
+    switch (gameState.currentPhase) {
+      case gamePhase.BETTING:
         phase01();
         break;
-      case "phase01":
+      case gamePhase.FIRST_DEAL:
         phase02();
         break;
-      case "phase02":
+      case gamePhase.DRAW:
         startPhase();
         break;
     }
@@ -686,7 +685,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Handle card/button holds
   const toggleHold = (index) => {
-    if (gamePhase !== "phase01") {
+    if (gameState.currentPhase !== gamePhase.FIRST_DEAL) {
       console.log("Hold attempted outside of hold phase");
       return;
     }
