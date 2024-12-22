@@ -364,43 +364,54 @@ body {
 }
 
 .coin-interface {
-    background: rgba(0, 0, 0, 0.3);
-    border-radius: 8px;
-    padding: 15px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 10px;
+    gap: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    margin: 0 auto; /* Center horizontally */
 }
 
 .coin-input {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 15px;
 }
 
 .coin-display {
     color: #ffd700;
-    font-size: 2em;
+    font-size: 2.5em;
     font-weight: bold;
-    min-width: 40px;
+    min-width: 60px;
     text-align: center;
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px 20px;
+    border-radius: 8px;
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 .coin-button {
-    background: #444;
+    background: linear-gradient(145deg, #444, #555);
     color: #fff;
     border: none;
-    border-radius: 4px;
-    width: 30px;
-    height: 30px;
-    font-size: 1.2em;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    font-size: 1.5em;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s, transform 0.2s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .coin-button:hover {
-    background: #555;
+    background: linear-gradient(145deg, #555, #666);
+}
+
+.coin-button:active {
+    transform: scale(0.95);
 }
 
 .coin-button:disabled {
@@ -410,18 +421,28 @@ body {
 }
 
 .coin-deal-button {
-    background: #28a745;
+    background: linear-gradient(145deg, #28a745, #218838);
     color: white;
     border: none;
-    border-radius: 4px;
-    padding: 8px 20px;
+    border-radius: 8px;
+    padding: 12px 30px;
     font-weight: bold;
     cursor: pointer;
     display: none;
+    transition: background-color 0.2s, transform 0.2s;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .coin-deal-button.visible {
     display: block;
+}
+
+.coin-deal-button:hover {
+    background: linear-gradient(145deg, #218838, #1e7e34);
+}
+
+.coin-deal-button:active {
+    transform: scale(0.95);
 }
 
 .instruction-text {
@@ -462,4 +483,29 @@ body {
 .winnings-amount {
     color: #ffffff; /* Pure white color */
     font-weight: bold;
+}
+
+.scrolling-message-container {
+    width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    margin: 20px 0 10px 0; /* 20px from the top, 10px from the bottom */
+}
+
+.scrolling-message {
+    display: inline-block;
+    padding-left: 100%;
+    animation: scroll 15s linear infinite;
+    color: #ffffff; /* White font color */
+    font-weight: bold;
+    animation-play-state: running; /* Ensure the animation starts immediately */
+}
+
+@keyframes scroll {
+    0% {
+        transform: translateX(100%);
+    }
+    100% {
+        transform: translateX(-100%);
+    }
 }

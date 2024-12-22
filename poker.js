@@ -193,25 +193,19 @@ document.addEventListener("DOMContentLoaded", () => {
   // Game phase functions
   function startPhase() {
     console.log('=== STARTING NEW GAME ===');
-    console.log('Resetting game state and UI elements...');
     
     currentHand = [];
     gamePhase = "start";
-    console.log('Game phase set to:', gamePhase);
-
-    // Log current bankroll
     console.log('Current Bankroll:', bankroll);
 
     // Reset UI elements
     mainDealButton.textContent = "DEAL";
     mainDealButton.style.display = 'block'; // Show button at start
     handTypeDisplay.textContent = "";
-    // Remove handScoreDisplay reset
     
     const rankDisplay = document.querySelector(".rank-display");
     rankDisplay.classList.remove("visible");
     handTypeDisplay.textContent = "";
-    // Remove handScoreDisplay reset
 
     // Reset all hold buttons
     holdButtons.forEach((button) => {
@@ -222,19 +216,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Reset all cards
     cards.forEach((card) => {
-      // Remove all possible classes and states
       card.className = "card card-back";
       card.style.backgroundImage = `url('${getCardImagePath()}')`;
       card.classList.remove("held", "wiggling");
-      // Reset any transforms or animations
       card.style.transform = "none";
       card.style.animation = "none";
     });
-
-    // Reset any console state
-    console.clear();
-    console.log("=== NEW GAME ===");
-    console.log('Game reset complete. Ready for new deal.');
 
     // Reset and enable coin interface
     coins = 0;
@@ -274,15 +261,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // Show cards one by one
     cards.forEach((card, index) => {
       setTimeout(() => {
-        console.log(`Dealing card ${index + 1}:`, currentHand[index]);
         card.className = "card";
-        card.style.backgroundImage = `url('${getCardImagePath(
-          currentHand[index]
-        )}')`;
+        card.style.backgroundImage = `url('${getCardImagePath(currentHand[index])}')`;
 
         // Show hold button after card is dealt
         setTimeout(() => {
-          console.log(`Showing hold button for position ${index + 1}`);
           holdButtons[index].style.visibility = "visible";
           holdButtons[index].classList.add("show");
         }, 200); // Delay hold button appearance
@@ -290,18 +273,11 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     gamePhase = "phase01";
-    console.log('Game phase set to:', gamePhase);
     console.log('Ready for player to select holds');
-
-    // Show instruction text after cards are dealt
-    setTimeout(() => {
-        document.querySelector('.instruction-text').classList.add('visible');
-    }, 1000);
   }
 
   function phase02() {
     console.log('=== DRAW PHASE ===');
-    console.log('Current hand before draw:', currentHand);
 
     // Hide instruction text
     document.querySelector('.instruction-text').classList.remove('visible');
@@ -310,12 +286,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const heldPositions = Array.from(holdButtons)
       .map((btn, i) => (btn.classList.contains("active") ? i : -1))
       .filter((i) => i !== -1);
-    
-    console.log('Held positions:', heldPositions);
-    console.log('Held cards:', heldPositions.map(i => currentHand[i]));
 
     const { hand: replacementCards } = dealHand(5);
-    console.log('Drew replacement cards:', replacementCards);
 
     // Hide all hold buttons and reset their state
     holdButtons.forEach((button) => {
@@ -328,21 +300,15 @@ document.addEventListener("DOMContentLoaded", () => {
     currentHand = currentHand.map((card, index) => {
       const cardElement = cards[index];
       if (heldPositions.includes(index)) {
-        console.log(`Keeping held card at position ${index + 1}:`, card);
         cardElement.classList.remove("held"); // Remove held state
         return card;
       } else {
         const newCard = replacementCards[replacementIndex++];
-        console.log(`Replacing card at position ${index + 1}:`, newCard);
         cardElement.className = "card"; // Reset to base class
-        cardElement.style.backgroundImage = `url('${getCardImagePath(
-          newCard
-        )}')`;
+        cardElement.style.backgroundImage = `url('${getCardImagePath(newCard)}')`;
         return newCard;
       }
     });
-
-    console.log('Final hand after draw:', currentHand);
 
     // Show game over message immediately
     document.querySelector(".rank-display").classList.add("visible");
@@ -353,7 +319,6 @@ document.addEventListener("DOMContentLoaded", () => {
         handTypeDisplay.innerHTML = HANDS[handRank] || "Invalid Hand";
         console.log("Final Hand:", currentHand);
         console.log("Hand Type:", HANDS[handRank]);
-        console.log("Score:", handRank);
 
         // Calculate and display winnings
         const payoutTable = [
@@ -369,7 +334,7 @@ document.addEventListener("DOMContentLoaded", () => {
             [50, 100, 150, 200, 250], // Straight Flush
             [800, 1600, 2400, 3200, 4000] // Royal Flush
         ];
-        const winnings = payoutTable[handRank][coins - 1] || 0;
+        const winnings = handRank >= 2 ? payoutTable[handRank][coins - 1] || 0 : 0;
         document.querySelector(".winnings-amount").textContent = winnings;
         console.log("Winnings:", winnings);
 
@@ -392,7 +357,6 @@ document.addEventListener("DOMContentLoaded", () => {
     gamePhase = "start";
 
     console.log("=== GAME OVER ===");
-    console.log("Press DEAL to play again");
   }
 
   function handleDealClick() {
@@ -400,9 +364,6 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log('Cannot deal: No coins inserted');
       return;
     }
-    
-    console.log(`Deal button pressed: ${gamePhase}`);
-    console.log('Current game phase:', gamePhase);
     
     switch (gamePhase) {
       case "start":
