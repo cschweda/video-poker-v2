@@ -267,6 +267,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Hide instruction text
     document.querySelector(".instruction-text").classList.remove("visible");
+
+    // Enable bet max button at start
+    betMaxCoin.disabled = false;
   }
 
   function phase01() {
@@ -313,6 +316,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     gamePhase = "phase01";
     console.log("Ready for player to select holds");
+
+    // Disable bet max button during play
+    betMaxCoin.disabled = true;
   }
 
   function phase02() {
@@ -403,6 +409,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Update bankroll at game over
     updateBankrollDisplay();
+
+    // Re-enable bet max button at game over
+    betMaxCoin.disabled = false;
   }
 
   function handleDealClick() {
