@@ -90,14 +90,9 @@ body {
 
 .card-back {
     background-image: url('images/cards/back.png');
-    background-size: cover;
-    background: repeating-linear-gradient(
-        45deg,
-        #606dbc,
-        #606dbc 10px,
-        #465298 10px,
-        #465298 20px
-    );
+    background-size: cover; /* Ensure the image covers the entire card */
+    background-repeat: no-repeat; /* Prevent the image from repeating */
+    background-position: center; /* Center the image */
     border: 2px solid #fff; /* Keep border only for card back */
 }
 

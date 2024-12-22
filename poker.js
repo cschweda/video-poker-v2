@@ -420,6 +420,11 @@ document.addEventListener("DOMContentLoaded", () => {
       sessionStats.initialBankroll = INITIAL_BANKROLL;
       sessionStats.currentBankroll = INITIAL_BANKROLL;
 
+      // Hide game over display
+      const rankDisplay = document.querySelector(".rank-display");
+      rankDisplay.classList.remove("visible");
+      handTypeDisplay.textContent = "";
+
       // Clear all stored data
       localStorage.removeItem("pokerStats");
       localStorage.removeItem("pokerSessionStats");
@@ -431,7 +436,7 @@ document.addEventListener("DOMContentLoaded", () => {
       // Update UI
       displayStats();
       updateBankrollDisplay();
-      console.log("Stats, logging, and bankroll reset to initial values");
+      console.log("Stats, logging, bankroll, and display reset to initial values");
     }
   }
 
