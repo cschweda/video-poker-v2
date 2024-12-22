@@ -9,12 +9,13 @@ body {
 
 .game-container {
     max-width: 1200px;
-    margin: 20px auto; /* Change from 15px to 20px */
+    margin: 20px auto;
+    /* Change from 15px to 20px */
     background: linear-gradient(145deg, #2c2c2c, #1a1a1a);
     border: 4px solid #444;
     border-radius: 15px;
     padding: 30px;
-    box-shadow: 
+    box-shadow:
         0 0 20px rgba(255, 0, 0, 0.2),
         0 0 40px rgba(255, 215, 0, 0.1);
     text-align: center;
@@ -25,7 +26,7 @@ body {
     padding: 30px;
     border-radius: 10px;
     border: 2px solid #1a5c59;
-    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.5);
     margin-bottom: 30px;
     display: flex;
     justify-content: center;
@@ -34,15 +35,19 @@ body {
 
 .card-slot {
     position: relative;
-    width: 150px; /* Match card width */
-    height: 218px; /* Match card height */
+    width: 150px;
+    /* Match card width */
+    height: 218px;
+    /* Match card height */
     margin: 0 10px;
-    padding-top: 40px; /* Reserved space for hold button */
+    padding-top: 40px;
+    /* Reserved space for hold button */
 }
 
 .hold-button {
     position: absolute;
-    top: 0; /* Change from -30px to 0 since we added padding to card-slot */
+    top: 0;
+    /* Change from -30px to 0 since we added padding to card-slot */
     left: 50%;
     transform: translateX(-50%);
     z-index: 2;
@@ -58,14 +63,16 @@ body {
     cursor: pointer;
     opacity: 0;
     transition: opacity 0.3s ease;
-    pointer-events: none; /* Button isn't clickable by default */
+    pointer-events: none;
+    /* Button isn't clickable by default */
     visibility: hidden;
 }
 
 .hold-button.active {
     opacity: 1;
     visibility: visible;
-    pointer-events: auto; /* Make button clickable when visible */
+    pointer-events: auto;
+    /* Make button clickable when visible */
 }
 
 .card {
@@ -77,55 +84,78 @@ body {
     border-radius: 5px;
     margin: 0;
     cursor: pointer;
-    position: relative; /* Change from absolute to relative */
+    position: relative;
+    /* Change from absolute to relative */
     transform: none;
     overflow: hidden;
     border: 2px solid gold;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
     transform-origin: center bottom;
-    box-shadow: 
-        0 4px 6px rgba(0,0,0,0.1),
+    box-shadow:
+        0 4px 6px rgba(0, 0, 0, 0.1),
         0 0 10px rgba(255, 215, 0, 0.3);
 }
 
 .card-back {
     background-image: url('images/cards/back.png');
-    background-size: cover; /* Ensure the image covers the entire card */
-    background-repeat: no-repeat; /* Prevent the image from repeating */
-    background-position: center; /* Center the image */
-    border: 2px solid #fff; /* Keep border only for card back */
+    background-size: cover;
+    background: repeating-linear-gradient(45deg,
+            #606dbc,
+            #606dbc 10px,
+            #465298 10px,
+            #465298 20px);
+    border: 2px solid #fff;
+    /* Keep border only for card back */
 }
 
 .card.held {
     border-color: #ff0000;
-    box-shadow: 
+    box-shadow:
         0 0 0 2px #ff0000,
-        0 0 15px rgba(255,0,0,0.3);
+        0 0 15px rgba(255, 0, 0, 0.3);
 }
 
 /* Remove all previous animation keyframes and related classes */
 @keyframes wiggleHold {
-    0% { transform: translateY(-30px) rotate(0deg); }
-    25% { transform: translateY(-30px) rotate(-2deg); }
-    75% { transform: translateY(-30px) rotate(2deg); }
-    100% { transform: translateY(-30px) rotate(0deg); }
+    0% {
+        transform: translateY(-30px) rotate(0deg);
+    }
+
+    25% {
+        transform: translateY(-30px) rotate(-2deg);
+    }
+
+    75% {
+        transform: translateY(-30px) rotate(2deg);
+    }
+
+    100% {
+        transform: translateY(-30px) rotate(0deg);
+    }
 }
 
 @keyframes initialHold {
-    0% { transform: translateY(0) rotate(0deg); }
-    100% { transform: translateY(-30px) rotate(0deg); }
+    0% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    100% {
+        transform: translateY(-30px) rotate(0deg);
+    }
 }
 
 @keyframes cardFlash {
-    0% { 
+    0% {
         border-color: #00ffff;
         box-shadow: 0 0 0 4px #00ffff, 0 0 25px rgba(0, 255, 255, 0.6);
     }
-    50% { 
+
+    50% {
         border-color: transparent;
         box-shadow: none;
     }
-    100% { 
+
+    100% {
         border-color: #00ffff;
         box-shadow: 0 0 0 4px #00ffff, 0 0 25px rgba(0, 255, 255, 0.6);
     }
@@ -145,30 +175,38 @@ body {
 }
 
 .card.highlight {
-    border-color: #00ffff; /* Bright cyan instead of gold */
-    box-shadow: 
-        0 0 0 4px #00ffff, /* Thicker border - changed from 2px to 4px */
-        0 0 25px rgba(0, 255, 255, 0.6); /* Matching glow effect */
+    border-color: #00ffff;
+    /* Bright cyan instead of gold */
+    box-shadow:
+        0 0 0 4px #00ffff,
+        /* Thicker border - changed from 2px to 4px */
+        0 0 25px rgba(0, 255, 255, 0.6);
+    /* Matching glow effect */
     transform: scale(1.02);
     transition: all 0.2s ease;
 }
 
 .deal-button {
-    padding: 0 70px; /* Increase padding for larger button */
-    font-size: 1.5em; /* Increase font size */
+    padding: 0 70px;
+    /* Increase padding for larger button */
+    font-size: 1.5em;
+    /* Increase font size */
     background-color: #28a745;
     color: white;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     transition: background-color 0.3s;
-    min-width: 250px; /* Increase minimum width */
+    min-width: 250px;
+    /* Increase minimum width */
     text-transform: uppercase;
     letter-spacing: 2px;
     font-weight: bold;
-    height: 60px; /* Increase height */
+    height: 60px;
+    /* Increase height */
     line-height: 60px;
-    display: flex; /* Use flexbox for alignment */
+    display: flex;
+    /* Use flexbox for alignment */
     align-items: center;
     justify-content: center;
     margin: 20px auto;
@@ -188,7 +226,8 @@ body {
 }
 
 .rank-display {
-    height: 80px; /* Fixed height for ranking display */
+    height: 80px;
+    /* Fixed height for ranking display */
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -221,7 +260,8 @@ body {
 
 .rank-info {
     display: grid;
-    grid-template-columns: auto auto; /* Keep as is since we still have two columns for label and type */
+    grid-template-columns: auto auto;
+    /* Keep as is since we still have two columns for label and type */
     gap: 5px;
     align-items: center;
     justify-content: center;
@@ -240,7 +280,8 @@ body {
     margin: 0;
     text-transform: uppercase;
     letter-spacing: 1px;
-    height: 24px; /* Fixed height for text lines */
+    height: 24px;
+    /* Fixed height for text lines */
     line-height: 24px;
     text-align: left;
 }
@@ -327,7 +368,8 @@ body {
 
 /* Remove any other paytable styles that might conflict */
 
-.paytable td:last-child { /* Payout column */
+.paytable td:last-child {
+    /* Payout column */
     text-align: right;
     color: #ffd700;
     font-weight: bold;
@@ -346,13 +388,16 @@ body {
 
 .table-container {
     display: flex;
-    align-items: stretch; /* Ensure both widgets stretch to the same height */
+    align-items: stretch;
+    /* Ensure both widgets stretch to the same height */
     gap: 20px;
     margin: 0 auto 20px;
 }
 
-.coin-interface, .rank-display {
-    flex: 1; /* Make both widgets flexible to take equal height */
+.coin-interface,
+.rank-display {
+    flex: 1;
+    /* Make both widgets flexible to take equal height */
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -365,10 +410,12 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center; /* Center vertically */
+    justify-content: center;
+    /* Center vertically */
     gap: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    margin: 0 auto; /* Center horizontally */
+    margin: 0 auto;
+    /* Center horizontally */
 }
 
 .coin-input {
@@ -443,10 +490,13 @@ body {
 
 .instruction-text {
     color: #aaa;
-    font-size: 1em; /* Increase font size */
-    font-weight: bold; /* Add font weight */
+    font-size: 1em;
+    /* Increase font size */
+    font-weight: bold;
+    /* Add font weight */
     text-align: center;
-    margin-top: 10px; /* Add margin to separate from cards */
+    margin-top: 10px;
+    /* Add margin to separate from cards */
     font-style: italic;
     opacity: 0;
     transition: opacity 0.3s ease;
@@ -456,8 +506,10 @@ body {
     opacity: 1;
 }
 
-.paytable td.highlight, .paytable th.highlight {
-    background-color: rgba(255, 215, 0, 0.3); /* Highlight color */
+.paytable td.highlight,
+.paytable th.highlight {
+    background-color: rgba(255, 215, 0, 0.3);
+    /* Highlight color */
 }
 
 .spinner {
@@ -472,12 +524,18 @@ body {
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 
 .winnings-amount {
-    color: #ffffff; /* Pure white color */
+    color: #ffffff;
+    /* Pure white color */
     font-weight: bold;
 }
 
@@ -490,7 +548,8 @@ body {
     align-items: center;
     gap: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    flex: 1; /* Match coin-interface and rank-display size */
+    flex: 1;
+    /* Match coin-interface and rank-display size */
     justify-content: center;
     margin: 0 auto;
 }
@@ -509,6 +568,19 @@ body {
     font-size: 2em;
     font-weight: bold;
     text-align: center;
+}
+
+#betMaxCoin {
+    background: linear-gradient(145deg, #ff0000, #cc0000);
+    /* Change background color to red */
+    font-size: 0.8em;
+    /* Reduce font size */
+    width: auto;
+    /* Ensure it doesn't have the circular shape */
+    padding: 10px 20px;
+    /* Add padding for better appearance */
+    border-radius: 5px;
+    /* Match other buttons */
 }
 
 .export-button {
