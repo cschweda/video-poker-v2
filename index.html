@@ -95,9 +95,18 @@
                 <td>12</td>
                 <td>15</td>
               </tr>
+              <!-- <tr>
+                <td>One Pair</td>
+                <td>1:2.37</td>
+                <td>1</td>
+                <td>2</td>
+                <td>3</td>
+                <td>4</td>
+                <td>5</td>
+              </tr> -->
               <tr>
                 <td>High Pair</td>
-                <td>1:7.69</td>
+                <td>1:2.37</td>
                 <td>1</td>
                 <td>2</td>
                 <td>3</td>
@@ -110,6 +119,25 @@
         <div class="bankroll-widget">
           <div class="bankroll-label">Bankroll</div>
           <div class="bankroll-amount">1000</div>
+          <div class="stats-container">
+            <div class="stat-row">
+              <span class="stat-label">Session Wins:</span>
+              <span class="stat-value" id="sessionWins">0</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Session Losses:</span>
+              <span class="stat-value" id="sessionLosses">0</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Win/Loss Ratio:</span>
+              <span class="stat-value" id="winRatio">0%</span>
+            </div>
+            <div class="stat-row">
+              <span class="stat-label">Best Hand:</span>
+              <span class="stat-value" id="bestHand">-</span>
+            </div>
+            <button id="resetStats" class="reset-stats-btn">Reset Stats</button>
+          </div>
         </div>
       </div>
       <div class="cards-container">
@@ -150,6 +178,10 @@
         </div>
       </div>
       <button class="deal-button">DEAL</button>
+      <!-- Add export button -->
+      <button class="export-button" id="exportStats">
+        Export Session Stats
+      </button>
     </div>
     <script src="poker.js" type="module"></script>
   </body>

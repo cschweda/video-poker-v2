@@ -17,8 +17,8 @@ export const RANKS = [
 export const SUITS = ["C", "D", "H", "S"];
 export const HANDS = [
   "Invalid Hand",
-  "High Card",
-  "One Pair",
+  "Low Pair/No Pair", // Changed from "High Card"
+  "High Pair", // Changed from "One Pair"
   "Two Pair",
   "Three of a Kind",
   "Straight",
@@ -106,9 +106,17 @@ export function evaluatePokerHand(cards) {
   // Count combinations
   let pairs = 0,
     threes = 0,
-    fours = 0;
-  rankCount.forEach((count) => {
-    if (count === 2) pairs++;
+    fours = 0,
+    highPairFound = false;
+
+  rankCount.forEach((count, index) => {
+    if (count === 2) {
+      pairs++;
+      // Check if it's a high pair (Jacks or better)
+      if (index >= RANKS.indexOf("J")) {
+        highPairFound = true;
+      }
+    }
     if (count === 3) threes++;
     if (count === 4) fours++;
   });
@@ -119,8 +127,8 @@ export function evaluatePokerHand(cards) {
   if (isStraight) return 5;
   if (threes) return 4;
   if (pairs === 2) return 3;
-  if (pairs === 1) return 2;
-  return 1;
+  if (pairs === 1 && highPairFound) return 2;
+  return 1; // Return 1 for low pair or no pair
 }
 
 // UI Functions
@@ -132,6 +140,20 @@ function getCardImagePath(cardCode) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Add odds lookup table at the top of the DOM content loaded handler
+  const HAND_ODDS = {
+    "Royal Flush": "1:649,740",
+    "Straight Flush": "1:72,193",
+    "Four of a Kind": "1:4,165",
+    "Full House": "1:694",
+    Flush: "1:509",
+    Straight: "1:255",
+    "Three of a Kind": "1:47",
+    "High Pair": "1:2.37", // Changed from "One Pair"
+    "Low Pair/No Pair": "1:1",
+    "Invalid Hand": "-",
+  };
+
   const holdButtons = document.querySelectorAll(".hold-button");
   const cards = document.querySelectorAll(".card");
   const mainDealButton = document.querySelector(".deal-button");
@@ -218,6 +240,250 @@ document.addEventListener("DOMContentLoaded", () => {
   let currentHand = [];
   let gamePhase = "start";
 
+  // Add session stats tracking with localStorage persistence
+  const savedSessionStats = localStorage.getItem("pokerSessionStats");
+  const sessionStats = savedSessionStats
+    ? JSON.parse(savedSessionStats)
+    : {
+        startTime: new Date().toISOString(),
+        initialBankroll: INITIAL_BANKROLL,
+        hands: [],
+        currentBankroll: INITIAL_BANKROLL,
+        totalWagered: 0,
+        totalWon: 0,
+      };
+
+  function logHand(handData) {
+    // Insert new hand at beginning of array instead of pushing to end
+    sessionStats.hands.unshift({
+      timestamp: new Date().toISOString(),
+      hand: handData.hand,
+      bet: handData.bet,
+      heldCards: handData.heldCards,
+      finalHand: handData.finalHand,
+      handType: handData.handType,
+      odds: HAND_ODDS[handData.handType], // Add odds to the hand data
+      winnings: handData.winnings,
+      bankrollAfter: handData.bankrollAfter,
+    });
+
+    sessionStats.currentBankroll = handData.bankrollAfter;
+    sessionStats.totalWagered += handData.bet;
+    sessionStats.totalWon += handData.winnings;
+
+    // Add summary data at top of stats object before saving
+    const statsWithSummary = {
+      lastUpdated: new Date().toISOString(),
+      totalHands: sessionStats.hands.length,
+      totalWagered: sessionStats.totalWagered,
+      totalWon: sessionStats.totalWon,
+      netProfit: sessionStats.totalWon - sessionStats.totalWagered,
+      ...sessionStats,
+    };
+
+    localStorage.setItem("pokerSessionStats", JSON.stringify(statsWithSummary));
+    console.log("Session Stats Updated:", statsWithSummary);
+  }
+
+  function exportStats() {
+    // Add summary section at top of export
+    const exportData = {
+      exportDate: new Date().toISOString(),
+      summary: {
+        totalHands: sessionStats.hands.length,
+        totalWagered: sessionStats.totalWagered,
+        totalWon: sessionStats.totalWon,
+        netProfit: sessionStats.totalWon - sessionStats.totalWagered,
+        winLossRatio:
+          sessionStats.hands.length > 0
+            ? (
+                stats.sessionWins /
+                (stats.sessionWins + stats.sessionLosses)
+              ).toFixed(2)
+            : "0.00",
+        bestHand: stats.bestHand || "None",
+        bestHandOdds: stats.bestHand ? HAND_ODDS[stats.bestHand] : "-",
+      },
+      handOddsTable: HAND_ODDS, // Include complete odds table in export
+      sessionData: sessionStats,
+    };
+
+    const statsJson = JSON.stringify(exportData, null, 2);
+    const blob = new Blob([statsJson], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `poker-session-${new Date()
+      .toISOString()
+      .slice(0, 19)
+      .replace(/:/g, "-")}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  // Add export button event listener
+  document.getElementById("exportStats").addEventListener("click", exportStats);
+
+  // Add stats management
+  const stats = {
+    sessionWins: 0,
+    sessionLosses: 0,
+    bestHand: "",
+    bestHandRank: 0,
+    totalHands: 0,
+    ...JSON.parse(localStorage.getItem("pokerStats") || "{}"),
+  };
+
+  function updateStats(handType, handRank, winnings) {
+    // Count high pair (handRank === 2) as a win
+    if (winnings > 0 || handType === "High Pair") {
+      stats.sessionWins++;
+    } else {
+      stats.sessionLosses++;
+    }
+
+    // Increment total hands counter
+    stats.totalHands++;
+
+    if (handRank > stats.bestHandRank) {
+      stats.bestHand = handType;
+      stats.bestHandRank = handRank;
+    }
+
+    localStorage.setItem("pokerStats", JSON.stringify(stats));
+    displayStats();
+  }
+
+  function displayStats() {
+    document.getElementById("sessionWins").textContent = stats.sessionWins;
+    document.getElementById("sessionLosses").textContent = stats.sessionLosses;
+
+    // New ratio calculation
+    const winRatio = document.getElementById("winRatio");
+    if (stats.sessionLosses === 0) {
+      winRatio.textContent = stats.sessionWins > 0 ? "∞" : "0.00";
+      winRatio.className = "stat-value positive";
+    } else {
+      const ratio = (stats.sessionWins / stats.sessionLosses).toFixed(2);
+      winRatio.textContent = ratio;
+      winRatio.className = `stat-value ${
+        ratio > 1 ? "positive" : ratio < 1 ? "negative" : ""
+      }`;
+    }
+
+    document.getElementById("bestHand").textContent = stats.bestHand || "-";
+
+    // Update total hands display - check if element exists first
+    let totalHandsEl = document.getElementById("totalHandsDisplay");
+    if (!totalHandsEl) {
+      // Create element only if it doesn't exist
+      totalHandsEl = document.createElement("div");
+      totalHandsEl.className = "stat-row";
+      totalHandsEl.id = "totalHandsDisplay";
+      totalHandsEl.innerHTML = `
+        <span class="stat-label">Total Hands:</span>
+        <span class="stat-value">${stats.totalHands}</span>
+      `;
+      // Insert at the top of stats container
+      const statsContainer = document.querySelector(".stats-container");
+      statsContainer.insertBefore(totalHandsEl, statsContainer.firstChild);
+    } else {
+      // Just update the value if element exists
+      totalHandsEl.querySelector(".stat-value").textContent = stats.totalHands;
+    }
+  }
+
+  // Modify reset functionality to clear all stored data
+  function resetStats() {
+    if (
+      confirm(
+        "Are you sure you want to reset all statistics and bankroll? This cannot be undone."
+      )
+    ) {
+      // Reset runtime stats
+      stats.sessionWins = 0;
+      stats.sessionLosses = 0;
+      stats.bestHand = "";
+      stats.bestHandRank = 0;
+      stats.totalHands = 0; // Reset total hands counter
+
+      // Reset bankroll to initial value
+      bankroll = INITIAL_BANKROLL;
+
+      // Reset session data
+      sessionStats.hands = [];
+      sessionStats.totalWagered = 0;
+      sessionStats.totalWon = 0;
+      sessionStats.startTime = new Date().toISOString();
+      sessionStats.initialBankroll = INITIAL_BANKROLL;
+      sessionStats.currentBankroll = INITIAL_BANKROLL;
+
+      // Clear all stored data
+      localStorage.removeItem("pokerStats");
+      localStorage.removeItem("pokerSessionStats");
+
+      // Save fresh session state
+      localStorage.setItem("pokerSessionStats", JSON.stringify(sessionStats));
+      localStorage.setItem("pokerStats", JSON.stringify(stats));
+
+      // Update UI
+      displayStats();
+      updateBankrollDisplay();
+      console.log("Stats, logging, and bankroll reset to initial values");
+    }
+  }
+
+  // Update reset button listener
+  document.getElementById("resetStats").addEventListener("click", resetStats);
+
+  // Move phase01 function definition before any code that uses it
+  function phase01() {
+    console.log("=== INITIAL DEAL PHASE ===");
+
+    // Disable coin interface after dealing
+    decreaseCoin.disabled = true;
+    increaseCoin.disabled = true;
+    coinDealButton.classList.remove("visible");
+
+    // Deduct coins from bankroll
+    bankroll -= coins;
+    updateBankrollDisplay();
+    console.log("Wager:", coins);
+    console.log("Bankroll after wager:", bankroll);
+
+    // Initial deal
+    holdButtons.forEach((button) => {
+      button.style.display = "block";
+      button.classList.remove("active");
+    });
+    mainDealButton.textContent = "DISCARD";
+    mainDealButton.style.display = "block";
+
+    const { hand } = dealHand(5);
+    currentHand = [...hand];
+    console.log("Initial hand dealt:", currentHand);
+
+    // Show cards one by one
+    cards.forEach((card, index) => {
+      setTimeout(() => {
+        card.className = "card";
+        card.style.backgroundImage = `url('${getCardImagePath(
+          currentHand[index]
+        )}')`;
+        setTimeout(() => {
+          holdButtons[index].style.visibility = "visible";
+          holdButtons[index].classList.add("show");
+        }, 200);
+      }, index * 200);
+    });
+
+    gamePhase = "phase01";
+    console.log("Ready for player to select holds");
+    betMaxCoin.disabled = true;
+  }
+
   // Game phase functions
   function startPhase() {
     console.log("=== STARTING NEW GAME ===");
@@ -270,55 +536,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Enable bet max button at start
     betMaxCoin.disabled = false;
-  }
 
-  function phase01() {
-    console.log("=== INITIAL DEAL PHASE ===");
-
-    // Disable coin interface after dealing
-    decreaseCoin.disabled = true;
-    increaseCoin.disabled = true;
-    coinDealButton.classList.remove("visible");
-
-    // Deduct coins from bankroll
-    bankroll -= coins;
-    updateBankrollDisplay(); // Update after subtracting wager
-    console.log("Wager:", coins);
-    console.log("Bankroll after wager:", bankroll);
-
-    // Initial deal
-    holdButtons.forEach((button) => {
-      button.style.display = "block";
-      button.classList.remove("active");
-    });
-    mainDealButton.textContent = "DISCARD";
-    mainDealButton.style.display = "block"; // Show main button for discard phase
-
-    const { hand } = dealHand(5);
-    currentHand = [...hand];
-    console.log("Initial hand dealt:", currentHand);
-
-    // Show cards one by one
-    cards.forEach((card, index) => {
-      setTimeout(() => {
-        card.className = "card";
-        card.style.backgroundImage = `url('${getCardImagePath(
-          currentHand[index]
-        )}')`;
-
-        // Show hold button after card is dealt
-        setTimeout(() => {
-          holdButtons[index].style.visibility = "visible";
-          holdButtons[index].classList.add("show");
-        }, 200); // Delay hold button appearance
-      }, index * 200); // Stagger card dealing
-    });
-
-    gamePhase = "phase01";
-    console.log("Ready for player to select holds");
-
-    // Disable bet max button during play
-    betMaxCoin.disabled = true;
+    // Hide export button at start
+    document.getElementById("exportStats").style.cssText =
+      "opacity: 0; visibility: hidden;";
   }
 
   function phase02() {
@@ -363,11 +584,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Show final results
     try {
       const handRank = evaluatePokerHand(currentHand);
-      handTypeDisplay.innerHTML = HANDS[handRank] || "Invalid Hand";
-      console.log("Final Hand:", currentHand);
-      console.log("Hand Type:", HANDS[handRank]);
+      const handType = HANDS[handRank] || "Invalid Hand";
 
-      // Calculate and display winnings
+      // Define payoutTable before using it
       const payoutTable = [
         [0, 0, 0, 0, 0], // Invalid Hand
         [0, 0, 0, 0, 0], // High Card
@@ -381,15 +600,39 @@ document.addEventListener("DOMContentLoaded", () => {
         [50, 100, 150, 200, 250], // Straight Flush
         [800, 1600, 2400, 3200, 4000], // Royal Flush
       ];
+
       const winnings =
         handRank >= 2 ? payoutTable[handRank][coins - 1] || 0 : 0;
+
+      // Log the completed hand
+      logHand({
+        hand: currentHand.slice(), // Use slice() instead of spread
+        bet: coins,
+        heldCards: heldPositions,
+        finalHand: currentHand.slice(),
+        handType: handType,
+        winnings: winnings,
+        bankrollAfter: bankroll + winnings,
+      });
+
+      handTypeDisplay.innerHTML = handType;
       document.querySelector(".winnings-amount").textContent = winnings;
-      console.log("Winnings:", winnings);
 
       // Add winnings to bankroll
       bankroll += winnings;
-      updateBankrollDisplay(); // Update after adding winnings
+      updateBankrollDisplay();
+
+      console.log("Final Hand:", currentHand);
+      console.log("Hand Type:", handType);
+      console.log("Winnings:", winnings);
       console.log("Bankroll after winnings:", bankroll);
+
+      // Add stats update
+      updateStats(handType, handRank, winnings);
+
+      // Show export button with game over screen
+      document.getElementById("exportStats").style.cssText =
+        "opacity: 1; visibility: visible;";
     } catch (error) {
       console.error("Hand evaluation error:", error);
       handTypeDisplay.innerHTML = "Invalid Hand";
@@ -477,4 +720,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Main game loop
   mainDealButton.addEventListener("click", handleDealClick);
   coinDealButton.addEventListener("click", handleDealClick);
+
+  // Initialize stats display
+  displayStats();
 });
